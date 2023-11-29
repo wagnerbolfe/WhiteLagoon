@@ -1,0 +1,38 @@
+﻿@model Villa
+
+<div class="d-flex flex-row justify-content-between mb-3">
+    <div class="m-3 col-md-6">
+        <img src="@Model.ImageUrl" style="border-radius:10px;" width="100%" alt="" />
+    </div>
+    <div class="mx-3 mt-2 col-md-5">
+        <div class="">
+            <div class="col-12">
+                <p class="card-title text-success mb-3" style="font-size:xx-large">@Model.Name</p>
+                <p class="card-text mb-5" style="font-size:large">
+                    @Html.Raw(Model.Description)
+                </p>
+                @if (Model.VillaAmenity != null && Model.VillaAmenity.Any())
+                {
+                    <p class="h5 text-white mb-2">Villa Amenities</p>
+                    <ul class="mb-4">
+                        @foreach (var amenity in Model.VillaAmenity)
+                        {
+                            <li>@amenity.Name</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+        <div>
+            <span class="text-end p-0 pt-3 m-0">
+                <span class="float-right"><i class="bi bi-person-standing"></i> : @Model.Occupancy adults </span><br />
+                <span class="float-right pt-1"><i class="bi bi-arrows-expand-vertical"></i> : @Model.Sqft sqft</span><br />
+                <p class="text-success font-weight-bold pt-3">
+                    <span class="border border-2 p-2 rounded border-success" style="font-size:large">
+                        @Model.Price.ToString("c") / night
+                    </span>
+                </p>
+            </span>
+        </div>
+    </div>
+</div>

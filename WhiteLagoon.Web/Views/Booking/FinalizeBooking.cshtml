@@ -1,0 +1,85 @@
+﻿@model Booking
+
+<div class="container pt-4 mt-0 mt-lg-4">
+    <div class="row" style="border: 1px solid #aaa; border-radius: 20px">
+
+        <div class="col-12 col-lg-7 p-4 2 mt-4 mt-md-0">
+            <div class="row p-1 mt-1" style="border-radius:20px; ">
+                <div class="col-6 mb-3">
+                    <h3 class="text-success">Villa Details</h3>
+                </div>
+                <div class="text-end col-6 ">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-danger border-2" style="width:150px;">
+                        <i class="bi bi-arrow-left-square"></i> &nbsp; Modify Booking
+                    </a>
+                </div>
+                <hr />
+                <partial name="_VillaDetail" model="Model.Villa"/>
+                <hr />
+                <div class="text-end pt-3">
+                    <h4 class="text-white font-weight-bold ">
+                        Booking Total :
+                        <span style="border-bottom:1px solid #ff6a00">
+                           USD @Model.TotalCost.ToString("C")
+                        </span>
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-5 p-4 2 mt-4 mt-md-0" style="border-left:1px solid #aaa">
+            <form method="post">
+                <input asp-for="VillaId" hidden />
+                <input asp-for="UserId" hidden />
+                <input asp-for="CheckInDate" hidden />
+                <input asp-for="CheckOutDate" hidden />
+                <input asp-for="Nights" hidden />
+                <div class="row pt-1 mb-3 " style="border-radius:20px; ">
+                    <div class="col-12">
+                        <h3 class="text-success">Enter Booking Details</h3>
+                    </div>
+                </div>
+
+                <div class="form-group pt-0">
+                    <label asp-for="Name" class="text-white">Name</label>
+                    <input asp-for="Name" class="form-control"/>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group pt-2">
+                    <label asp-for="Phone" class="text-white">Phone</label>
+                    <input asp-for="Phone" class="form-control"/>
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+                <div class="form-group pt-2">
+                    <label asp-for="Email" class="text-white">Email</label>
+                    <input asp-for="Email" class="form-control"/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group pt-2">
+                    <label asp-for="CheckInDate" class="text-white">Check in Date</label>
+                    <input asp-for="CheckInDate" disabled class="form-control"/>
+                    <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                </div>
+                <div class="form-group pt-2">
+                    <label asp-for="CheckOutDate" class="text-white">Check Out Date</label>
+                    <input asp-for="CheckOutDate" disabled class="form-control"/>
+                    <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                </div>
+                <div class="form-group pt-2">
+                    <label asp-for="Nights" class="text-white">No. of nights</label>
+                    <input asp-for="Nights" disabled class="form-control"/>
+                    <span asp-validation-for="Nights" class="text-danger"></span>
+                </div>
+                <div class="form-group mt-5">
+                    @if (Model.Villa.IsAvailable)
+                    {
+                        <button type="submit" class="btn btn-lg btn-success form-control mt-4">Looks Good! Checkout Now</button>
+                    }
+                    else
+                    {
+                        <input class="btn btn-danger disabled form-control" value="Sold Out"/>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

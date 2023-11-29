@@ -1,0 +1,14 @@
+﻿{
+  "profiles": {
+    "WhiteLagoonWeb": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "hotReloadEnabled": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5160",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
