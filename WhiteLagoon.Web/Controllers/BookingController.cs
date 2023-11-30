@@ -21,6 +21,12 @@ namespace WhiteLagoon.Web.Controllers
         }
 
         [Authorize]
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        [Authorize]
         public IActionResult FinalizeBooking(int villaId, DateOnly checkInDate, int nights)
         {
             var claimsIdentity = (ClaimsIdentity)User.Identity;
@@ -62,7 +68,7 @@ namespace WhiteLagoon.Web.Controllers
             var domain = Request.Scheme+"://"+Request.Host.Value;
             var options = new SessionCreateOptions
             {
-                LineItems = new List<SessionLineItemOptions>(),
+                LineItems = [],
                 Mode = "payment",
                 SuccessUrl = domain + $"/booking/BookingConfirmation?bookingId={booking.Id}",
                 CancelUrl = domain + $"/booking/FinalizeBooking?villaId={booking.VillaId}&checkInDate={booking.CheckInDate}&nights={booking.Nights}",
@@ -89,7 +95,7 @@ namespace WhiteLagoon.Web.Controllers
             _unitOfWork.Booking.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
             _unitOfWork.Save();
 
-            Response.Headers.Add("Location", session.Url);
+            Response.Headers.Append("Location", session.Url);
             return new StatusCodeResult(303);
         }
         
@@ -113,6 +119,47 @@ namespace WhiteLagoon.Web.Controllers
             
             return View(bookingId);
         }
+
+        [Authorize]
+        public IActionResult BookingDetails(int bookingId)
+        {
+            var booking = _unitOfWork.Booking.Get(u => u.Id == bookingId, includeProperties: "User,Villa");
+
+            //if (booking.VillaNumber == 0 && booking.Status == StaticDetail.StatusApproved)
+            //{
+            //    var availableVillaNumber = AssignAvailableVillaNumberByVilla(booking.VillaId);
+
+            //    bookingFromDb.VillaNumbers = _villaNumberService.GetAllVillaNumbers().Where(u => u.VillaId == bookingFromDb.VillaId
+            //    && availableVillaNumber.Any(x => x == u.Villa_Number)).ToList();
+            //}
+
+            return View(booking);
+        }
+
+        #region API Calls
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetAll(string status)
+        {
+            IEnumerable<Booking> objBookings;
+            string userId = "";
+            if (string.IsNullOrEmpty(status))
+            {
+                status = "";
+            }
+
+            if (!User.IsInRole(StaticDetail.RoleAdmin))
+            {
+                var claimsIdentity = (ClaimsIdentity) User.Identity;
+                userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+            }
+
+            objBookings = _unitOfWork.Booking.GetAll(u => u.UserId == userId, includeProperties: "User,Villa");
+
+            return Json(new { data = objBookings });
+        }
+
+        #endregion
     }
 }
 

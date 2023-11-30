@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="~/WhiteLagoon.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/spinner.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+
 </head>
 <body>
     <header>
@@ -37,6 +39,11 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="VillaNumber" asp-action="Index">VillaNumber</a></li>
                                 <li><a class="dropdown-item" asp-area="" asp-controller="Amenity" asp-action="Index">Amenity</a></li>
+                                <li><a class="dropdown-item" 
+                                    asp-area="" 
+                                    asp-controller="Booking" 
+                                    asp-action="Index" asp-route-status="@StaticDetail.StatusApproved">Booking</a>
+                                </li>
                             </ul>
                         </li>
                     </ul>
@@ -63,6 +70,7 @@
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
