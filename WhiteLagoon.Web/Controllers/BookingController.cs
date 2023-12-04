@@ -111,7 +111,7 @@ namespace WhiteLagoon.Web.Controllers
 
                 if (session.PaymentStatus == "paid")
                 {
-                    _unitOfWork.Booking.UpdateStatus(booking.Id, StaticDetail.StatusApproved);
+                    _unitOfWork.Booking.UpdateStatus(booking.Id, StaticDetail.StatusApproved, 0);
                     _unitOfWork.Booking.UpdateStripePaymentId(booking.Id, session.Id, session.PaymentIntentId);
                     _unitOfWork.Save();
                 }
@@ -125,15 +125,64 @@ namespace WhiteLagoon.Web.Controllers
         {
             var booking = _unitOfWork.Booking.Get(u => u.Id == bookingId, includeProperties: "User,Villa");
 
-            //if (booking.VillaNumber == 0 && booking.Status == StaticDetail.StatusApproved)
-            //{
-            //    var availableVillaNumber = AssignAvailableVillaNumberByVilla(booking.VillaId);
+            if (booking.VillaNumber == 0 && booking.Status == StaticDetail.StatusApproved)
+            {
+                var availableVillaNumber = AssignAvailableVillaNumberByVilla(booking.VillaId);
 
-            //    bookingFromDb.VillaNumbers = _villaNumberService.GetAllVillaNumbers().Where(u => u.VillaId == bookingFromDb.VillaId
-            //    && availableVillaNumber.Any(x => x == u.Villa_Number)).ToList();
-            //}
+                booking.VillaNumbers = _unitOfWork.VillaNumber.GetAll(u => u.VillaId == booking.VillaId
+                && availableVillaNumber.Any(x => x == u.Villa_Number)).ToList();
+            }
 
             return View(booking);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = StaticDetail.RoleAdmin)]
+        public IActionResult CheckIn(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStatus(booking.Id, StaticDetail.StatusCheckedIn, booking.VillaNumber);
+            _unitOfWork.Save();
+            TempData["Success"] = "Booking Updated Successfully.";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = StaticDetail.RoleAdmin)]
+        public IActionResult CheckOut(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStatus(booking.Id, StaticDetail.StatusCompleted, booking.VillaNumber);
+            _unitOfWork.Save();
+            TempData["Success"] = "Booking Completed Successfully.";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = StaticDetail.RoleAdmin)]
+        public IActionResult CancelBooking(Booking booking)
+        {
+            _unitOfWork.Booking.UpdateStatus(booking.Id, StaticDetail.StatusCancelled, 0);
+            _unitOfWork.Save();
+            TempData["Success"] = "Booking Cancelled Successfully.";
+            return RedirectToAction(nameof(BookingDetails), new { bookingId = booking.Id });
+        }
+
+        private List<int> AssignAvailableVillaNumberByVilla(int villaId)
+        {
+            List<int> availableVillaNumbers = new();
+
+            var villaNumbers = _unitOfWork.VillaNumber.GetAll(u => u.VillaId == villaId);
+
+            var checkedInVilla = _unitOfWork.Booking.GetAll(u => u.VillaId == villaId && u.Status == StaticDetail.StatusCheckedIn)
+                    .Select(u => u.VillaNumber);
+
+            foreach (var villaNumber in villaNumbers)
+            {
+                if (!checkedInVilla.Contains(villaNumber.Villa_Number))
+                {
+                    availableVillaNumbers.Add(villaNumber.Villa_Number);
+                }
+            }
+            return availableVillaNumbers;
         }
 
         #region API Calls
@@ -142,20 +191,21 @@ namespace WhiteLagoon.Web.Controllers
         public IActionResult GetAll(string status)
         {
             IEnumerable<Booking> objBookings;
-            string userId = "";
-            if (string.IsNullOrEmpty(status))
+            if (User.IsInRole(StaticDetail.RoleAdmin))
             {
-                status = "";
+                objBookings = _unitOfWork.Booking.GetAll(includeProperties: "User,Villa");
             }
-
-            if (!User.IsInRole(StaticDetail.RoleAdmin))
+            else
             {
                 var claimsIdentity = (ClaimsIdentity) User.Identity;
-                userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+                objBookings = _unitOfWork.Booking
+                    .GetAll(u => u.UserId == userId, includeProperties: "User,Villa");
             }
-
-            objBookings = _unitOfWork.Booking.GetAll(u => u.UserId == userId, includeProperties: "User,Villa");
-
+            if (!string.IsNullOrEmpty(status))
+            {
+                objBookings = objBookings.Where(u => u.Status.ToLower().Equals(status.ToLower()));
+            }
             return Json(new { data = objBookings });
         }
 
